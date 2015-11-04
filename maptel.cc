@@ -1,4 +1,10 @@
 #include "cmaptel"
+#include <unordered_map>
+
+typedef std::unordered_map<std::string, std::string>
+        Dictionary;
+typedef std::unordered_map<int, Dictionary>
+        DictionaryMap;
 
 extern "C"{
 	unsigned long jnp1::maptel_create(){
