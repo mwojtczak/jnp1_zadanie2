@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include "cmaptel"
 
 extern "C"{
