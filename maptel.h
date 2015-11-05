@@ -1,4 +1,4 @@
-#include <stdlib.h>
+//#include <stdlib.h>
 
 // Tworzy słownik i zwraca liczbę naturalną będącą jego identyfikatorem.
 unsigned long maptel_create();

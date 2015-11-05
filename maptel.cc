@@ -1,4 +1,6 @@
+#include <stdlib.h>
 #include "cmaptel"
+#include <string>
 #include <unordered_map>
 
 typedef std::unordered_map<std::string, std::string>
@@ -11,7 +13,7 @@ extern "C"{
 		return 0;
 	}
 }
-
+/*
 extern "C"{
 	void jnp1::maptel_delete(unsigned long id){
 	}
@@ -31,3 +33,4 @@ extern "C"{
 	void jnp1::maptel_transform(unsigned long id, char const *tel_src, char *tel_dst, size_t len){
 	}
 }
+*/
