@@ -10,8 +10,6 @@
 #include <cstring> //std::strcpy
 #include <climits>
 
-const size_t max_tel_size = 22;
-
 #ifndef NDEBUG
     const bool debug = true;
 #else
@@ -91,7 +89,7 @@ extern "C"{
  */
 	void jnp1::maptel_insert(unsigned long id, char const *tel_src, char const *tel_dst){
 		if(debug){
-			std::cerr << "maptel: maptel_insert(" <<id << ", " << tel_src << ", " << tel_dst << ")" << std::endl;
+			std::cerr << "maptel: maptel_insert(" << id << ", " << tel_src << ", " << tel_dst << ")" << std::endl;
 			assert(id >= 0);
 			assert (id < ULONG_MAX);
 			assert(database.find(id) != database.end());
@@ -99,8 +97,8 @@ extern "C"{
 		std::string s_tel_src(tel_src);
 		std::string s_tel_dst(tel_dst);
 		if (debug){
-			assert(s_tel_src.length() <= max_tel_size);
-			assert(s_tel_dst.length() <= max_tel_size);
+			assert(s_tel_src.length() <= TEL_NUM_MAX_LEN);
+			assert(s_tel_dst.length() <= TEL_NUM_MAX_LEN);
 			assert(std::all_of(s_tel_src.begin(), s_tel_src.end(), isdigit));
 			assert(std::all_of(s_tel_dst.begin(), s_tel_dst.end(), isdigit));
 		}
@@ -134,13 +132,13 @@ extern "C"{
 	void jnp1::maptel_erase(unsigned long id, char const *tel_src){
 
 	    if (debug)
-	        fprintf(stderr,"maptel: maptel_erase(%lu, %s)", id, tel_src);
+	        std::cerr << "maptel: maptel_erase(" << id << ", " << tel_src << ")" << std::endl;
 
 		std::string s_tel_src(tel_src);
 
 		//Sprawdzanie poprawnosci numeru telefonu
 		if (debug){
-		    assert(s_tel_src.length() <= max_tel_size);
+		    assert(s_tel_src.length() <= TEL_NUM_MAX_LEN);
 		    assert(std::all_of(s_tel_src.begin(), s_tel_src.end(), isdigit));
 		}
 
@@ -157,9 +155,9 @@ extern "C"{
 		    bool erased = dict.erase(s_tel_src);
 		    if (debug) {
 		      if (erased)
-		        fprintf(stderr, "maptel: maptel_erase: erased");
+		        std::cerr << "maptel: maptel_erase: erased" << std::endl;
 		      else
-		        fprintf(stderr, "maptel: maptel_erase: nothing to erase");
+		    	  std::cerr << "maptel: maptel_erase: nothing to erase" << std::endl;
 		    }
 		}
 	}
@@ -185,15 +183,14 @@ extern "C"{
 	void jnp1::maptel_transform(unsigned long id, char const *tel_src, char *tel_dst, size_t len){
 
 	    if (debug)
-	        fprintf(stderr, "maptel: maptel_transform(%lu, %s, %s, %zu)",
-	            id, tel_src, tel_dst, len);
+	    	std::cerr << "maptel: maptel_transform" << id << ", " << tel_src << ", " << tel_dst << ")" << std::endl;
 
 	    std::unordered_set<std::string> tel_num_set;
 	    std::string s_tel_src(tel_src);
 
 	    //Sprawdzanie poprawnosci numeru telefonu
 		if (debug){
-		    assert(s_tel_src.length() <= max_tel_size);
+		    assert(s_tel_src.length() <= TEL_NUM_MAX_LEN);
 		    assert(std::all_of(s_tel_src.begin(), s_tel_src.end(), isdigit));
 		}
 
@@ -228,8 +225,7 @@ extern "C"{
                     else{
                         //Jezeli doszlo do zaptelenia konczymy petle
                         //i ustawiamy tel_dsc na tel_src
-                        fprintf(stderr,
-                            "maptel: maptel_transform: cycle detected");
+                    	std::cerr << "maptel: maptel_transform: cycle detected" << std::endl;
                         found = true;
                         s_tel_dst = s_tel_src;
                     }
@@ -245,8 +241,7 @@ extern "C"{
             //nie przekracza len
             assert(strlen(tel_dst) < len);
             if (debug)
-                fprintf(stderr, "maptel: maptel_transform: %s -> %s",
-                    tel_src, tel_dst);
+            	std::cerr << "maptel: maptel_transform: " << tel_src << " -> " << tel_dst << std::endl;
 		}
 
         //Czyszczenie zbioru numerow

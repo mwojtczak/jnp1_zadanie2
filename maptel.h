@@ -1,4 +1,5 @@
-//#include <stdlib.h>
+//Maksymalny rozmiar numeru telefonu
+const size_t TEL_NUM_MAX_LEN = 22;
 
 // Tworzy słownik i zwraca liczbę naturalną będącą jego identyfikatorem.
 unsigned long maptel_create();
