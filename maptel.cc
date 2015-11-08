@@ -16,6 +16,12 @@
     const bool debug = false;
 #endif
 
+//@TODO
+//3. czy w nagłówkach metod musi byc jnp1::?nie wystarczy namespace? patrz: jnp1::TEL_NUM_MAX_LEN
+//4. extern "C" tylko na początku, 1 dla wszystkich funkcji
+
+
+
 /* 
  * dictionary to mapa zmian numerow telefonow w pojedynczym slowniku.
  * Pierwsze pole mapy to numer pierowtny.
@@ -33,15 +39,6 @@ typedef std::unordered_map<int, dictionary>
 
 dictionary_map database;
 
-//static dictionary dictionary_create(){
-//	dictionary a;
-//	return a;
-//}
-
-//@TODO
-//1. zamienić fprintf na cerr
-//3. czy w nagłówkach metod musi byc jnp1::?
-
 extern "C"{
 
 /*
@@ -49,7 +46,7 @@ extern "C"{
  *
  * @return numer stworzonego słownika
  */
-	unsigned long jnp1::maptel_create(){
+	unsigned long maptel_create(){
 		static unsigned long dict_id = 0;
 		if(debug)
 			std::cerr << "maptel: maptel_create()" << std::endl;
@@ -59,15 +56,29 @@ extern "C"{
 			std::cerr << "maptel: maptel_create: new map id = " << dict_id << std::endl;
 		return dict_id++;
 	}
+
+	bool maptel_found_dict(unsigned long id){
+		if(database.find(id) == database.end()){
+			std::cout << "nie ma takiego słownika\n";
+			return false;
+		}else{
+			std::cout << "słownik znaleziono\n";
+			return true;
+		}
+		return !(database.find(id) == database.end());
+	}
 }
+
 
 extern "C"{
 
+
+//@TODO sprawdzić czy jedyną opcją komunikatu jest potwierdzenie: czy może być notka o braku słownika do usunięcia?
 /*
  * Usuwa słownik o numerze id z database
  *
  */
-	void jnp1::maptel_delete(unsigned long id){
+	void maptel_delete(unsigned long id){
 		if(debug){
 			std::cerr << "maptel: maptel_delete(" << id << ")" << std::endl;
 			assert(id >= 0);
@@ -87,7 +98,7 @@ extern "C"{
  * Jeśli istniała informacja o zmianie numeru tel_src, to ją nadpisuje.
  *
  */
-	void jnp1::maptel_insert(unsigned long id, char const *tel_src, char const *tel_dst){
+	void maptel_insert(unsigned long id, char const *tel_src, char const *tel_dst){
 		if(debug){
 			std::cerr << "maptel: maptel_insert(" << id << ", " << tel_src << ", " << tel_dst << ")" << std::endl;
 			assert(id >= 0);
@@ -96,24 +107,59 @@ extern "C"{
 		}
 		std::string s_tel_src(tel_src);
 		std::string s_tel_dst(tel_dst);
+
 		if (debug){
-			assert(s_tel_src.length() <= TEL_NUM_MAX_LEN);
-			assert(s_tel_dst.length() <= TEL_NUM_MAX_LEN);
+			assert(s_tel_src.length() <= jnp1::TEL_NUM_MAX_LEN);
+			assert(s_tel_dst.length() <= jnp1::TEL_NUM_MAX_LEN);
 			assert(std::all_of(s_tel_src.begin(), s_tel_src.end(), isdigit));
 			assert(std::all_of(s_tel_dst.begin(), s_tel_dst.end(), isdigit));
 		}
+
 		dictionary_map::const_iterator map_elem = database.find(id);
 		if(debug)
 			assert(map_elem != database.end());
-		dictionary my_dict = map_elem->second;
-		dictionary::const_iterator elem = my_dict.find(s_tel_src);
-		if(elem != my_dict.end()){
-			my_dict.at(s_tel_src) = s_tel_dst;
-		}else{
-			my_dict.insert({s_tel_src, s_tel_dst});
-		}
+
+		dictionary dict = database.at(id);
+		database.erase(id);
+		dict.insert({s_tel_src, s_tel_dst});
+		database.insert({id, dict});
+
 		if(debug)
 			std::cerr << "maptel: maptel_insert: inserted" << std::endl;
+	}
+
+
+	bool maptel_found_hist(unsigned long id, char const *tel_src, char const *tel_dst){
+		std::string s_tel_src(tel_src);
+		std::string s_tel_dst(tel_dst);
+		dictionary_map::const_iterator map_elem = database.find(id);
+		if(map_elem == database.end()){
+			std::cout << "nie ma takiego słownika\n";
+			return false;
+		}
+		dictionary my_dict = map_elem->second;
+		dictionary::const_iterator elem = my_dict.find(s_tel_src);
+		if(elem == my_dict.end()){
+			std::cout << "nie ma takiego numeru \n";
+			return false;
+		}
+		std::string second = elem->second;
+		if(second.compare(s_tel_dst) == 0){
+			std::cout << "wszystko okay";
+			return true;
+		}else{
+			std::cout << "nie zgadza się historia zmian";
+			return false;
+		}
+		return !(elem == my_dict.end());
+	}
+
+	void print_all_dict(unsigned long id){
+		dictionary d = (database.find(id))->second;
+		for ( auto it = d.begin(); it != d.end(); ++it ){
+		    std::cout << " " << it->first << ":" << it->second;
+		    std::cout << std::endl;
+		}
 	}
 }
 
@@ -129,7 +175,7 @@ extern "C"{
  * Zostaje usunieta ze slownika zmiana numeru tel_src o ile istniala
  */
 extern "C"{
-	void jnp1::maptel_erase(unsigned long id, char const *tel_src){
+	void maptel_erase(unsigned long id, char const *tel_src){
 
 	    if (debug)
 	        std::cerr << "maptel: maptel_erase(" << id << ", " << tel_src << ")" << std::endl;
@@ -138,7 +184,7 @@ extern "C"{
 
 		//Sprawdzanie poprawnosci numeru telefonu
 		if (debug){
-		    assert(s_tel_src.length() <= TEL_NUM_MAX_LEN);
+		    assert(s_tel_src.length() <= jnp1::TEL_NUM_MAX_LEN);
 		    assert(std::all_of(s_tel_src.begin(), s_tel_src.end(), isdigit));
 		}
 
@@ -180,7 +226,7 @@ extern "C"{
  *
  */
 extern "C"{
-	void jnp1::maptel_transform(unsigned long id, char const *tel_src, char *tel_dst, size_t len){
+	void maptel_transform(unsigned long id, char const *tel_src, char *tel_dst, size_t len){
 
 	    if (debug)
 	    	std::cerr << "maptel: maptel_transform" << id << ", " << tel_src << ", " << tel_dst << ")" << std::endl;
@@ -190,7 +236,7 @@ extern "C"{
 
 	    //Sprawdzanie poprawnosci numeru telefonu
 		if (debug){
-		    assert(s_tel_src.length() <= TEL_NUM_MAX_LEN);
+		    assert(s_tel_src.length() <= jnp1::TEL_NUM_MAX_LEN);
 		    assert(std::all_of(s_tel_src.begin(), s_tel_src.end(), isdigit));
 		}
 
@@ -247,4 +293,10 @@ extern "C"{
         //Czyszczenie zbioru numerow
 		tel_num_set.clear();
 	}
+
 }
+
+//	int main(){
+//		unsigned long test1 = maptel_create();
+//		return 0;
+//	}

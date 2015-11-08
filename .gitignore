@@ -3,6 +3,10 @@
 .metadata/
 RemoteSystemsTempFiles/
 zadanie2/
+maptel_test1.c
+maptel_test1.err
+maptel_test2.cc
+maptel_test2.err
 
 # Compiled Object files
 *.slo
