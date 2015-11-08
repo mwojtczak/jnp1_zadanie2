@@ -9,6 +9,7 @@
 #include <cctype> //isdigit
 #include <cstring> //std::strcpy
 #include <climits>
+#include <iomanip> // cout << hex
 
 #ifndef NDEBUG
     const bool debug = true;
@@ -229,7 +230,7 @@ extern "C"{
 	void maptel_transform(unsigned long id, char const *tel_src, char *tel_dst, size_t len){
 
 	    if (debug)
-	    	std::cerr << "maptel: maptel_transform" << id << ", " << tel_src << ", " << tel_dst << ")" << std::endl;
+	    	std::cerr << "maptel: maptel_transform(" << id << ", " << tel_src << ", " << std::hex << tel_dst << ", " << len << ")" << std::endl;
 
 	    std::unordered_set<std::string> tel_num_set;
 	    std::string s_tel_src(tel_src);
