@@ -204,7 +204,7 @@ extern "C"{
 		if (debug)
 		    assert(map_elem != database().end());
 
-        //Poszukiwania i usuwanie numeru tel_src
+        //Poszukiwania i numeru tel_src
 		if ( map_elem != database().end() ) {
 		    dictionary &dict = (map_elem->second);
 		    bool erased = dict.erase(s_tel_src);
@@ -277,7 +277,10 @@ extern "C"{
                         s_tel_dst = dummy;
                     }
                     else{
-                       	std::cerr << "maptel: maptel_transform: cycle detected" << std::endl;
+                   		if (debug)
+                       		std::cerr << 
+                       		"maptel: maptel_transform: cycle detected" 
+                       		<< std::endl;
                         found = true;
                         s_tel_dst = s_tel_src;
                     }
@@ -293,7 +296,8 @@ extern "C"{
             //nie przekracza len
             assert(strlen(tel_dst) < len);
             if (debug)
-            	std::cerr << "maptel: maptel_transform: " << tel_src << " -> " << tel_dst << std::endl;
+            	std::cerr << "maptel: maptel_transform: " << tel_src << " -> " 
+            	<< tel_dst << std::endl;
 		}
 
         //Czyszczenie zbioru numerow
