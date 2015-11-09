@@ -8,7 +8,6 @@
 #include <cctype> //isdigit
 #include <cstring> //std::strcpy
 #include <climits>
-#include <iomanip> // cout << hex
 #include "cmaptel"
 
 #ifndef NDEBUG
