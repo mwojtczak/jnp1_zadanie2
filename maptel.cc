@@ -190,7 +190,7 @@ extern "C"{
 		}
 
 		//Poszukiwania slownika o numerze id
-		dictionary_map::const_iterator map_elem = database.find(id);
+		auto map_elem = database.find(id);
 
 		//Sprawdzenie czy istnieje slownik o numerze id
 		if (debug)
@@ -198,11 +198,11 @@ extern "C"{
 
         //Poszukiwania numeru tel_src
 		if ( map_elem != database.end() ) {
-		    dictionary dict = (map_elem->second);
+		    dictionary &dict = (map_elem->second);
 		    bool erased = dict.erase(s_tel_src);
 		    if (debug) {
-		      if (erased)
-		        std::cerr << "maptel: maptel_erase: erased" << std::endl;
+		        if (erased)
+		          std::cerr << "maptel: maptel_erase: erased" << std::endl;
 		      else
 		    	  std::cerr << "maptel: maptel_erase: nothing to erase" << std::endl;
 		    }
@@ -230,7 +230,7 @@ extern "C"{
 	void maptel_transform(unsigned long id, char const *tel_src, char *tel_dst, size_t len){
 
 	    if (debug)
-	    	std::cerr << "maptel: maptel_transform(" << id << ", " << tel_src << ", " << std::hex << tel_dst << ", " << len << ")" << std::endl;
+	    	std::cerr << "maptel: maptel_transform(" << id << ", " << tel_src << ", " << std::addressof(tel_dst) << ", " << len << ")" << std::endl;
 
 	    std::unordered_set<std::string> tel_num_set;
 	    std::string s_tel_src(tel_src);
@@ -242,7 +242,7 @@ extern "C"{
 		}
 
 		//Poszukiwania slownika o numerze id
-		dictionary_map::const_iterator map_elem = database.find(id);
+		auto map_elem = database.find(id);
 
 		//Sprawdzenie czy istnieje slownik o numerze id
 		if (debug)
@@ -257,16 +257,14 @@ extern "C"{
             //Petla szukajaca kolejnych zmian numeru tel_src
             while (!found) {
                 //Sprawdzenie czy istnieje zmiana numeru tel_dst
-                dictionary::const_iterator dict_elem = dict.find(s_tel_dst);
+                auto dict_elem = dict.find(s_tel_dst);
                 if (dict_elem != dict.end()){
                     //Sprawdzenie czy nie dostalismy zapetlenia
                     std::string dummy = dict_elem->second;
-                    std::unordered_set<std::string>::const_iterator
-                        set_elem = tel_num_set.find(dummy);
-                    if (set_elem != tel_num_set.end()){
+                    auto check = tel_num_set.insert(dummy);
+                    if (check.second){
                         //Jezeli nie ma zapetlenia, ustawiamy zmienne
                         // i dochodzi do kolejnego obrotu petli while
-                        tel_num_set.insert(dummy);
                         s_tel_dst = dummy;
                     }
                     else{
