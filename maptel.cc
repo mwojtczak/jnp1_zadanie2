@@ -186,7 +186,8 @@ extern "C"{
 	void maptel_erase(unsigned long id, char const *tel_src){
 
 	    if (debug)
-	        std::cerr << "maptel: maptel_erase(" << id << ", " << tel_src << ")" << std::endl;
+	        std::cerr << "maptel: maptel_erase(" << id << ", " << tel_src << ")" 
+	        << std::endl;
 
 		std::string s_tel_src(tel_src);
 
@@ -203,7 +204,7 @@ extern "C"{
 		if (debug)
 		    assert(map_elem != database().end());
 
-        //Poszukiwania numeru tel_src
+        //Poszukiwania i usuwanie numeru tel_src
 		if ( map_elem != database().end() ) {
 		    dictionary &dict = (map_elem->second);
 		    bool erased = dict.erase(s_tel_src);
@@ -211,7 +212,8 @@ extern "C"{
 		        if (erased)
 		          std::cerr << "maptel: maptel_erase: erased" << std::endl;
 		      else
-		    	  std::cerr << "maptel: maptel_erase: nothing to erase" << std::endl;
+		    	  std::cerr << "maptel: maptel_erase: nothing to erase" 
+		    	  << std::endl;
 		    }
 		}
 	}
@@ -234,10 +236,12 @@ extern "C"{
  *
  */
 extern "C"{
-	void maptel_transform(unsigned long id, char const *tel_src, char *tel_dst, size_t len){
+	void maptel_transform(unsigned long id, char const *tel_src, 
+		char *tel_dst, size_t len){
 
 	    if (debug)
-	    	std::cerr << "maptel: maptel_transform(" << id << ", " << tel_src << ", " << std::addressof(tel_dst) << ", " << len << ")" << std::endl;
+	    	std::cerr << "maptel: maptel_transform(" << id << ", " << tel_src <<
+	    	", " << std::addressof(tel_dst) << ", " << len << ")" << std::endl;
 
 	    std::unordered_set<std::string> tel_num_set;
 	    std::string s_tel_src(tel_src);
@@ -266,18 +270,14 @@ extern "C"{
                 //Sprawdzenie czy istnieje zmiana numeru tel_dst
                 auto dict_elem = dict.find(s_tel_dst);
                 if (dict_elem != dict.end()){
-                    //Sprawdzenie czy nie dostalismy zapetlenia
                     std::string dummy = dict_elem->second;
                     auto check = tel_num_set.insert(dummy);
+                    //Sprawdzenie czy nie dostalismy zapetlenia
                     if (check.second){
-                        //Jezeli nie ma zapetlenia, ustawiamy zmienne
-                        // i dochodzi do kolejnego obrotu petli while
                         s_tel_dst = dummy;
                     }
                     else{
-                        //Jezeli doszlo do zaptelenia konczymy petle
-                        //i ustawiamy tel_dsc na tel_src
-                    	std::cerr << "maptel: maptel_transform: cycle detected" << std::endl;
+                       	std::cerr << "maptel: maptel_transform: cycle detected" << std::endl;
                         found = true;
                         s_tel_dst = s_tel_src;
                     }
@@ -301,8 +301,3 @@ extern "C"{
 	}
 
 }
-
-//	int main(){
-//		unsigned long test1 = maptel_create();
-//		return 0;
-//	}
