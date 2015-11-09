@@ -38,7 +38,15 @@ typedef std::unordered_map<std::string, std::string>
 typedef std::unordered_map<int, dictionary>
         dictionary_map;
 
-dictionary_map database;
+//dictionary_map database;
+
+extern "C"{
+	dictionary_map& database()
+	{
+		static dictionary_map database;
+		return database;
+	}
+}
 
 extern "C"{
 
@@ -52,21 +60,21 @@ extern "C"{
 		if(debug)
 			std::cerr << "maptel: maptel_create()" << std::endl;
 		dictionary new_dict;
-		database.insert({dict_id, new_dict});
+		database().insert({dict_id, new_dict});
 		if(debug)
 			std::cerr << "maptel: maptel_create: new map id = " << dict_id << std::endl;
 		return dict_id++;
 	}
 
 	bool maptel_found_dict(unsigned long id){
-		if(database.find(id) == database.end()){
+		if(database().find(id) == database().end()){
 			std::cout << "nie ma takiego słownika\n";
 			return false;
 		}else{
 			std::cout << "słownik znaleziono\n";
 			return true;
 		}
-		return !(database.find(id) == database.end());
+		return !(database().find(id) == database().end());
 	}
 }
 
@@ -84,9 +92,9 @@ extern "C"{
 			std::cerr << "maptel: maptel_delete(" << id << ")" << std::endl;
 			assert(id >= 0);
 			assert (id < ULONG_MAX);
-			assert(database.find(id) != database.end());
+			assert(database().find(id) != database().end());
 		}
-		database.erase(id);
+		database().erase(id);
 		if(debug){
 			std::cerr << "maptel: maptel_delete: map " << id << " deleted" << std::endl;
 		}
@@ -104,7 +112,7 @@ extern "C"{
 			std::cerr << "maptel: maptel_insert(" << id << ", " << tel_src << ", " << tel_dst << ")" << std::endl;
 			assert(id >= 0);
 			assert (id < ULONG_MAX);
-			assert(database.find(id) != database.end());
+			assert(database().find(id) != database().end());
 		}
 		std::string s_tel_src(tel_src);
 		std::string s_tel_dst(tel_dst);
@@ -116,14 +124,14 @@ extern "C"{
 			assert(std::all_of(s_tel_dst.begin(), s_tel_dst.end(), isdigit));
 		}
 
-		dictionary_map::const_iterator map_elem = database.find(id);
+		dictionary_map::const_iterator map_elem = database().find(id);
 		if(debug)
-			assert(map_elem != database.end());
+			assert(map_elem != database().end());
 
-		dictionary dict = database.at(id);
-		database.erase(id);
+		dictionary dict = database().at(id);
+		database().erase(id);
 		dict.insert({s_tel_src, s_tel_dst});
-		database.insert({id, dict});
+		database().insert({id, dict});
 
 		if(debug)
 			std::cerr << "maptel: maptel_insert: inserted" << std::endl;
@@ -133,8 +141,8 @@ extern "C"{
 	bool maptel_found_hist(unsigned long id, char const *tel_src, char const *tel_dst){
 		std::string s_tel_src(tel_src);
 		std::string s_tel_dst(tel_dst);
-		dictionary_map::const_iterator map_elem = database.find(id);
-		if(map_elem == database.end()){
+		dictionary_map::const_iterator map_elem = database().find(id);
+		if(map_elem == database().end()){
 			std::cout << "nie ma takiego słownika\n";
 			return false;
 		}
@@ -156,7 +164,7 @@ extern "C"{
 	}
 
 	void print_all_dict(unsigned long id){
-		dictionary d = (database.find(id))->second;
+		dictionary d = (database().find(id))->second;
 		for ( auto it = d.begin(); it != d.end(); ++it ){
 		    std::cout << " " << it->first << ":" << it->second;
 		    std::cout << std::endl;
@@ -190,14 +198,14 @@ extern "C"{
 		}
 
 		//Poszukiwania slownika o numerze id
-		auto map_elem = database.find(id);
+		auto map_elem = database().find(id);
 
 		//Sprawdzenie czy istnieje slownik o numerze id
 		if (debug)
-		    assert(map_elem != database.end());
+		    assert(map_elem != database().end());
 
         //Poszukiwania numeru tel_src
-		if ( map_elem != database.end() ) {
+		if ( map_elem != database().end() ) {
 		    dictionary &dict = (map_elem->second);
 		    bool erased = dict.erase(s_tel_src);
 		    if (debug) {
@@ -242,14 +250,14 @@ extern "C"{
 		}
 
 		//Poszukiwania slownika o numerze id
-		auto map_elem = database.find(id);
+		auto map_elem = database().find(id);
 
 		//Sprawdzenie czy istnieje slownik o numerze id
 		if (debug)
-		    assert(map_elem != database.end());
+		    assert(map_elem != database().end());
 
         //Poszukiwania zmian numeru
-		if ( map_elem != database.end() ) {
+		if ( map_elem != database().end() ) {
             dictionary dict = (map_elem->second);
             bool found = false;
             std::string s_tel_dst = s_tel_src;
