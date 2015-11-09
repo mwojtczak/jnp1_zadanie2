@@ -38,6 +38,7 @@ typedef std::unordered_map<std::string, std::string>
 typedef std::unordered_map<int, dictionary>
         dictionary_map;
 
+
 //dictionary_map database;
 
 extern "C"{
@@ -124,14 +125,13 @@ extern "C"{
 			assert(std::all_of(s_tel_dst.begin(), s_tel_dst.end(), isdigit));
 		}
 
-		dictionary_map::const_iterator map_elem = database().find(id);
+
+		auto map_elem =  database().find(id);
 		if(debug)
 			assert(map_elem != database().end());
 
-		dictionary dict = database().at(id);
-		database().erase(id);
+		dictionary & dict =  database().at(id);
 		dict.insert({s_tel_src, s_tel_dst});
-		database().insert({id, dict});
 
 		if(debug)
 			std::cerr << "maptel: maptel_insert: inserted" << std::endl;
