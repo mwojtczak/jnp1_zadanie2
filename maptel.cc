@@ -1,6 +1,5 @@
 #include <cstdlib>
 #include <cassert>
-#include "cmaptel"
 #include <string>
 #include <iostream>
 #include <unordered_map>
@@ -10,6 +9,7 @@
 #include <cstring> //std::strcpy
 #include <climits>
 #include <iomanip> // cout << hex
+#include "cmaptel"
 
 #ifndef NDEBUG
     const bool debug = true;
