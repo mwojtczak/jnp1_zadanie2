@@ -16,7 +16,7 @@ const bool debug = true;
 const bool debug = false;
 #endif
 
-/* 
+/* *
  * dictionary to mapa zmian numerow telefonow w pojedynczym slowniku.
  * Pierwsze pole mapy to numer pierowtny.
  * Drugie pole mapy to numer na jaki zostal zmieniony.
@@ -31,7 +31,7 @@ typedef std::unordered_map<int, dictionary> dictionary_map;
 
 extern "C" {
 
-	/*
+	/**
 	 * Tworzy statyczną mapę słowników database i ją zwraca.
 	 *
 	 * @return mapa słowników, w której są przechowywane
@@ -41,7 +41,7 @@ extern "C" {
 		return database;
 	}
 
-	/*
+	/**
 	 * Tworzy nowy słownik i dodaje go do mapy słowników database, nadając mu wygenerowany klucz
 	 *
 	 * @return numer stworzonego słownika
@@ -58,10 +58,10 @@ extern "C" {
 		return dict_id++;
 	}
 
-	/*
+	/**
 	 * Usuwa słownik o numerze id z database.
 	 *
-	 *@param id usuwanego słownika
+	 * @param id usuwanego słownika
 	 */
 	void maptel_delete(unsigned long id) {
 		if (debug) {
@@ -76,13 +76,13 @@ extern "C" {
 					<< std::endl;
 	}
 
-	/*
+	/**
 	 * Wstawia nową zmianę słowa do słownika o numerze id.
 	 * Jeśli istniała informacja o zmianie numeru tel_src, to ją nadpisuje.
 	 *
 	 * @param id numer słownika, do którego wstawiane jest słowo
 	 * @param tel_src zmieniany numer
-	 * @pamar tel_dst numer, na który zmieniono tel_src
+	 * @param tel_dst numer, na który zmieniono tel_src
 	 *
 	 */
 	void maptel_insert(unsigned long id, char const *tel_src, char const *tel_dst) {
@@ -110,32 +110,28 @@ extern "C" {
 			std::cerr << "maptel: maptel_insert: inserted" << std::endl;
 	}
 
-	/** Usuwanie informacji o zmianie telefonu tel_src w slowniku o numerze id
+	/**
+	 * Usuwanie informacji o zmianie telefonu tel_src w slowniku o numerze id
 	 * o ile taka zmiana istnieje, wpp nic sie nie dzieje
 	 *
-	 * @info
-	 * Szuka w bazie danych slownika o numerze id
-	 * Jezeli taki slownik istnieje usuwa informacje o zmianie numeru tel_src
-	 *
-	 * @result
-	 * Zostaje usunieta ze slownika zmiana numeru tel_src o ile istniala
+	 * @param id numer slownika, z ktorego usuwane jest slowo
+	 * @param tel_src usuwany numer
+	 * 
 	 */
 	void maptel_erase(unsigned long id, char const *tel_src) {
 		if (debug)
 			std::cerr << "maptel: maptel_erase(" << id << ", " << tel_src << ")"
 					<< std::endl;
 		std::string s_tel_src(tel_src);
-		//Sprawdzanie poprawnosci numeru telefonu
 		if (debug) {
 			assert(s_tel_src.length() <= jnp1::TEL_NUM_MAX_LEN);
 			assert(std::all_of(s_tel_src.begin(), s_tel_src.end(), isdigit));
+			assert(id >= 0);
+			assert(id < ULONG_MAX);
 		}
-		//Poszukiwania slownika o numerze id
 		auto map_elem = database().find(id);
-		//Sprawdzenie czy istnieje slownik o numerze id
 		if (debug)
 			assert(map_elem != database().end());
-		//Poszukiwania i numeru tel_src
 		if (map_elem != database().end()) {
 			dictionary & dict = (map_elem->second);
 			bool erased = dict.erase(s_tel_src);
@@ -148,10 +144,54 @@ extern "C" {
 			}
 		}
 	}
+	
+	/**
+	 * Funkcja pomocnicza dla maptel_transform, ktora szuka kolejnych zmian
+	 * w konkretnym slowniku.
+	 *
+	 * @param dict slownik w ktorym maja byc szukane zmiany
+	 * @param s_tel_src numer ktorego ostateczna zmiana ma zostac znaleziona
+	 * 
+	 * @return numer na ktory zostal zmieniony tel_src
+	 *
+	 */ 
+	std::string static find_tel_dst(dictionary dict, std::string s_tel_src){	
+		std::unordered_set<std::string> tel_num_set;
+		bool found = false;
+		std::string s_tel_dst = s_tel_src;
+		while (!found) {
+			auto dict_elem = dict.find(s_tel_dst);
+			if (dict_elem != dict.end()) {
+				std::string dummy = dict_elem->second;
+				auto check = tel_num_set.insert(dummy);
+				if (check.second) {
+					s_tel_dst = dummy;
+				} else {
+					if (debug)
+						std::cerr << "maptel: maptel_transform: cycle detected"
+						<< std::endl;
+					found = true;
+					s_tel_dst = s_tel_src;
+				}
+			}
+			else
+				found = true;
+		}			
+		tel_num_set.clear();
+		return s_tel_dst;
+	}
 
-	/** Wypisywanie aktualnego numeru na jaki zostal zmieniony numer tel_src
+	/** 
+	 * Wypisywanie aktualnego numeru na jaki zostal zmieniony numer tel_src
+	 *
+	 * @param id numer slownika, w ktorym maja byc szukane zmiany
+	 * @param tel_src numer, ktorego zmiana ma byc znaleziona
+	 * @param tel_dst numer, na ktorym ma byc zapisane na jaki numer zostal 
+	 * zmieniony tel_src
+	 * @param len wielokosc przydzielonej pamieci tel_dst
 	 *
 	 * @info
+	 * Korzysta z find_tel_dst
 	 * Szuka numeru tel_src w slowniku o numerze id i sprawdza na co zostal
 	 * zmieniony.
 	 * Nowy numer zostaje dodany do zbioru tel_num_set. W petli jest robione
@@ -167,68 +207,28 @@ extern "C" {
 	 */
 	void maptel_transform(unsigned long id, char const *tel_src, char *tel_dst,
 			size_t len) {
-
 		if (debug)
 			std::cerr << "maptel: maptel_transform(" << id << ", " << tel_src
 					<< ", " << std::addressof(tel_dst) << ", " << len << ")"
 					<< std::endl;
-
-		std::unordered_set<std::string> tel_num_set;
 		std::string s_tel_src(tel_src);
-
-		//Sprawdzanie poprawnosci numeru telefonu
 		if (debug) {
 			assert(s_tel_src.length() <= jnp1::TEL_NUM_MAX_LEN);
 			assert(std::all_of(s_tel_src.begin(), s_tel_src.end(), isdigit));
+			assert(id >= 0);
+			assert(id < ULONG_MAX);
 		}
-
-		//Poszukiwania slownika o numerze id
 		auto map_elem = database().find(id);
-
-		//Sprawdzenie czy istnieje slownik o numerze id
 		if (debug)
 			assert(map_elem != database().end());
-
-		//Poszukiwania zmian numeru
 		if (map_elem != database().end()) {
 			dictionary dict = (map_elem->second);
-			bool found = false;
-			std::string s_tel_dst = s_tel_src;
-
-			//Petla szukajaca kolejnych zmian numeru tel_src
-			while (!found) {
-				//Sprawdzenie czy istnieje zmiana numeru tel_dst
-				auto dict_elem = dict.find(s_tel_dst);
-				if (dict_elem != dict.end()) {
-					std::string dummy = dict_elem->second;
-					auto check = tel_num_set.insert(dummy);
-					//Sprawdzenie czy nie dostalismy zapetlenia
-					if (check.second) {
-						s_tel_dst = dummy;
-					} else {
-						if (debug)
-							std::cerr << "maptel: maptel_transform: cycle detected"
-									<< std::endl;
-						found = true;
-						s_tel_dst = s_tel_src;
-					}
-				}
-				//Jezeli nie ma zmiany aktualnie sprawdzanego numeru
-				//to koniec petli, a tel_dst jest aktualnie sprawdzanym numerem
-				else
-					found = true;
-			}
-
+			std::string s_tel_dst = find_tel_dst(dict, s_tel_src);
 			std::strcpy(tel_dst, s_tel_dst.c_str());
-			//Sprawdzenie czy wielkość pamięci wskazywanej przez tel_dst
-			//nie przekracza len
 			assert(strlen(tel_dst) < len);
 			if (debug)
 				std::cerr << "maptel: maptel_transform: " << tel_src << " -> "
 						<< tel_dst << ", " << std::endl;
 		}
-
-		//Czyszczenie zbioru numerow
-		tel_num_set.clear();
 	}
 }
