@@ -149,6 +149,13 @@ extern "C" {
 	 * Funkcja pomocnicza dla maptel_transform, ktora szuka kolejnych zmian
 	 * w konkretnym slowniku.
 	 *
+	 * @info
+	 * Nowy numer zostaje dodany do zbioru tel_num_set. W petli jest robione
+	 * to samo dla kazdego nowego numeru.
+	 * Jezeli numer ktory probujemy dodac do slownika juz sie tam znajduje 
+	 * dostajemy cykl.
+	 * wpp ostatnia znaleziona zmiana jest aktualnym numerem
+	 *
 	 * @param dict slownik w ktorym maja byc szukane zmiany
 	 * @param s_tel_src numer ktorego ostateczna zmiana ma zostac znaleziona
 	 * 
@@ -193,12 +200,7 @@ extern "C" {
 	 * @info
 	 * Korzysta z find_tel_dst
 	 * Szuka numeru tel_src w slowniku o numerze id i sprawdza na co zostal
-	 * zmieniony.
-	 * Nowy numer zostaje dodany do zbioru tel_num_set. W petli jest robione
-	 * to samo dla kazdego nowego numeru.
-	 * Jezeli numer ktory probujemy dodac do slownika juz sie tam znajduje dostajemy
-	 * cykl.
-	 * wpp ostatnia znaleziona zmiana jest aktualnym numerem
+	 * zmieniony funkcja find_tel_dst.
 	 *
 	 * @result
 	 * Na zmienna *tel_dst zostaje przypisany albo ostatni numer w ciagu zmian
