@@ -32,6 +32,24 @@ typedef std::unordered_map<int, dictionary> dictionary_map;
 extern "C" {
 
 	/**
+     * Funkcja do sprawdzania poprawnosc id slownika
+	 *
+	 */
+	static void assert_id(unsigned long id){
+	 	assert(id >= 0);
+		assert(id < ULONG_MAX);
+	}
+	
+	/**
+	 * Funkcja do sprawdzania poprawnosc numeru telefonu
+	 *
+	 */
+	static void assert_tel_number(std::string s_tel_src){
+		assert(s_tel_src.length() <= jnp1::TEL_NUM_MAX_LEN);
+		assert(std::all_of(s_tel_src.begin(), s_tel_src.end(), isdigit));
+	}
+	
+	/**
 	 * Tworzy statyczną mapę słowników database i ją zwraca.
 	 *
 	 * @return mapa słowników, w której są przechowywane
@@ -89,8 +107,6 @@ extern "C" {
 		if (debug) {
 			std::cerr << "maptel: maptel_insert(" << id << ", " << tel_src << ", "
 					<< tel_dst << ")" << std::endl;
-			assert(id >= 0);
-			assert(id < ULONG_MAX);
 			assert(database().find(id) != database().end());
 		}
 		std::string s_tel_src(tel_src);
@@ -124,10 +140,8 @@ extern "C" {
 					<< std::endl;
 		std::string s_tel_src(tel_src);
 		if (debug) {
-			assert(s_tel_src.length() <= jnp1::TEL_NUM_MAX_LEN);
-			assert(std::all_of(s_tel_src.begin(), s_tel_src.end(), isdigit));
-			assert(id >= 0);
-			assert(id < ULONG_MAX);
+			assert_tel_number(s_tel_src);
+			assert_id(id);
 		}
 		auto map_elem = database().find(id);
 		if (debug)
@@ -162,7 +176,7 @@ extern "C" {
 	 * @return numer na ktory zostal zmieniony tel_src
 	 *
 	 */ 
-	std::string static find_tel_dst(dictionary dict, std::string s_tel_src){	
+	static std::string find_tel_dst(dictionary dict, std::string s_tel_src){	
 		std::unordered_set<std::string> tel_num_set;
 		bool found = false;
 		std::string s_tel_dst = s_tel_src;
@@ -215,10 +229,8 @@ extern "C" {
 					<< std::endl;
 		std::string s_tel_src(tel_src);
 		if (debug) {
-			assert(s_tel_src.length() <= jnp1::TEL_NUM_MAX_LEN);
-			assert(std::all_of(s_tel_src.begin(), s_tel_src.end(), isdigit));
-			assert(id >= 0);
-			assert(id < ULONG_MAX);
+			assert_tel_number(s_tel_src);
+			assert_id(id);
 		}
 		auto map_elem = database().find(id);
 		if (debug)
