@@ -29,26 +29,27 @@ const bool debug = false;
 typedef std::unordered_map<std::string, std::string> dictionary;
 typedef std::unordered_map<int, dictionary> dictionary_map;
 
+/**
+ * Funkcja do sprawdzania poprawnosc id slownika
+ *
+ */
+static void assert_id(unsigned long id){
+ 	assert(id >= 0);
+	assert(id < ULONG_MAX);
+}
+	
+/**
+ * Funkcja do sprawdzania poprawnosc numeru telefonu
+ *
+ */
+static void assert_tel_number(std::string s_tel_src){
+	assert(s_tel_src.length() <= jnp1::TEL_NUM_MAX_LEN);
+	assert(std::all_of(s_tel_src.begin(), s_tel_src.end(), isdigit));
+}
+	
+
 extern "C" {
 
-	/**
-     * Funkcja do sprawdzania poprawnosc id slownika
-	 *
-	 */
-	static void assert_id(unsigned long id){
-	 	assert(id >= 0);
-		assert(id < ULONG_MAX);
-	}
-	
-	/**
-	 * Funkcja do sprawdzania poprawnosc numeru telefonu
-	 *
-	 */
-	static void assert_tel_number(std::string s_tel_src){
-		assert(s_tel_src.length() <= jnp1::TEL_NUM_MAX_LEN);
-		assert(std::all_of(s_tel_src.begin(), s_tel_src.end(), isdigit));
-	}
-	
 	/**
 	 * Tworzy statyczną mapę słowników database i ją zwraca.
 	 *
@@ -60,7 +61,8 @@ extern "C" {
 	}
 
 	/**
-	 * Tworzy nowy słownik i dodaje go do mapy słowników database, nadając mu wygenerowany klucz
+	 * Tworzy nowy słownik i dodaje go do mapy słowników database, nadając mu 
+	 * wygenerowany klucz
 	 *
 	 * @return numer stworzonego słownika
 	 */
@@ -105,6 +107,7 @@ extern "C" {
 	 */
 	void maptel_insert(unsigned long id, char const *tel_src, char const *tel_dst) {
 		if (debug) {
+			assert_id(id);
 			std::cerr << "maptel: maptel_insert(" << id << ", " << tel_src << ", "
 					<< tel_dst << ")" << std::endl;
 			assert(database().find(id) != database().end());
@@ -112,10 +115,8 @@ extern "C" {
 		std::string s_tel_src(tel_src);
 		std::string s_tel_dst(tel_dst);
 		if (debug) {
-			assert(s_tel_src.length() <= jnp1::TEL_NUM_MAX_LEN);
-			assert(s_tel_dst.length() <= jnp1::TEL_NUM_MAX_LEN);
-			assert(std::all_of(s_tel_src.begin(), s_tel_src.end(), isdigit));
-			assert(std::all_of(s_tel_dst.begin(), s_tel_dst.end(), isdigit));
+			assert_tel_number(s_tel_src);
+			assert_tel_number(s_tel_dst);
 		}
 		auto map_elem = database().find(id);
 		if (debug)
@@ -154,7 +155,7 @@ extern "C" {
 					std::cerr << "maptel: maptel_erase: erased" << std::endl;
 				else
 					std::cerr << "maptel: maptel_erase: nothing to erase"
-							<< std::endl;
+						<< std::endl;
 			}
 		}
 	}
@@ -189,8 +190,8 @@ extern "C" {
 					s_tel_dst = dummy;
 				} else {
 					if (debug)
-						std::cerr << "maptel: maptel_transform: cycle detected"
-						<< std::endl;
+						std::cerr << "maptel: maptel_transform: cycle detected" 
+							<< std::endl;
 					found = true;
 					s_tel_dst = s_tel_src;
 				}
@@ -221,12 +222,10 @@ extern "C" {
 	 * albo tel_src jezeli numer nie byl zmieniany lub otrzymalismy cykl
 	 *
 	 */
-	void maptel_transform(unsigned long id, char const *tel_src, char *tel_dst,
-			size_t len) {
+	void maptel_transform(unsigned long id, char const *tel_src, char *tel_dst, size_t len) {
 		if (debug)
 			std::cerr << "maptel: maptel_transform(" << id << ", " << tel_src
-					<< ", " << std::addressof(tel_dst) << ", " << len << ")"
-					<< std::endl;
+				<< ", " << std::addressof(tel_dst) << ", " << len << ")" << std::endl;
 		std::string s_tel_src(tel_src);
 		if (debug) {
 			assert_tel_number(s_tel_src);
@@ -242,7 +241,7 @@ extern "C" {
 			assert(strlen(tel_dst) < len);
 			if (debug)
 				std::cerr << "maptel: maptel_transform: " << tel_src << " -> "
-						<< tel_dst << ", " << std::endl;
+					<< tel_dst << ", " << std::endl;
 		}
 	}
 }
