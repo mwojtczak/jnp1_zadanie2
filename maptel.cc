@@ -43,6 +43,7 @@ static void assert_id(unsigned long id) {
  *
  */
 static void assert_tel_number(std::string s_tel_src) {
+	assert(s_tel_src.length() > 0);
 	assert(s_tel_src.length() <= jnp1::TEL_NUM_MAX_LEN);
 	assert(std::all_of(s_tel_src.begin(), s_tel_src.end(), isdigit));
 }
@@ -127,7 +128,7 @@ extern "C" {
 	void maptel_delete(unsigned long id) {
 		if (debug) {
 			std::cerr << "maptel: maptel_delete(" << id << ")" << std::endl;
-			assert_id(id)
+			assert_id(id);
 			assert(database().find(id) != database().end());
 		}
 		database().erase(id);
