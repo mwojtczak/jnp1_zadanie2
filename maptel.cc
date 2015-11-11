@@ -49,9 +49,9 @@ static void assert_tel_number(std::string s_tel_src) {
 }
 
 /**
- * Tworzy statyczną mapę słowników database i ją zwraca.
+ * Tworzy statyczna mape slownikow database i ja zwraca.
  *
- * @return mapa słowników, w której są przechowywane
+ * @return mapa slownikow, w ktorej sa przechowywane
  */
 static dictionary_map& database() {
 	static dictionary_map database;
@@ -103,10 +103,10 @@ static std::string find_tel_dst(dictionary dict, std::string s_tel_src) {
 extern "C" {
 
 	/**
-	 * Tworzy nowy słownik i dodaje go do mapy słowników database, nadając mu 
+	 * Tworzy nowy slownik i dodaje go do mapy slownikow database, nadajac mu
 	 * wygenerowany klucz
 	 *
-	 * @return numer stworzonego słownika
+	 * @return numer stworzonego slownika
 	 */
 	unsigned long maptel_create() {
 		static unsigned long dict_id = 0;
@@ -121,9 +121,9 @@ extern "C" {
 	}
 
 	/**
-	 * Usuwa słownik o numerze id z database.
+	 * Usuwa slownik o numerze id z database.
 	 *
-	 * @param id usuwanego słownika
+	 * @param id usuwanego slownika
 	 */
 	void maptel_delete(unsigned long id) {
 		if (debug) {
@@ -134,16 +134,16 @@ extern "C" {
 		database().erase(id);
 		if (debug)
 			std::cerr << "maptel: maptel_delete: map " << id << " deleted"
-					<< std::endl;
+				<< std::endl;
 	}
 
 	/**
-	 * Wstawia nową zmianę słowa do słownika o numerze id.
-	 * Jeśli istniała informacja o zmianie numeru tel_src, to ją nadpisuje.
+	 * Wstawia nowa zmiane slowa do slownika o numerze id.
+	 * Jeśli istniala informacja o zmianie numeru tel_src, to ja nadpisuje.
 	 *
-	 * @param id numer słownika, do którego wstawiane jest słowo
+	 * @param id numer slownika, do ktorego wstawiane jest slowo
 	 * @param tel_src zmieniany numer
-	 * @param tel_dst numer, na który zmieniono tel_src
+	 * @param tel_dst numer, na ktory zmieniono tel_src
 	 *
 	 */
 	void maptel_insert(unsigned long id, char const *tel_src, char const *tel_dst) {
